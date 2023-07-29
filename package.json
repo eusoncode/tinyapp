@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/eusoncode/tinyapp/issues"
   },
-  "homepage": "https://github.com/eusoncode/tinyapp#readme"
+  "homepage": "https://github.com/eusoncode/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
