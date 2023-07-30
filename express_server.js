@@ -5,7 +5,8 @@ const PORT = 8080; // Define default port 8080
 app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
 
 // Set up cookie-parser API
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const { name } = require('ejs');
 app.use(cookieParser())
 
 // set view engine to EJS
@@ -95,6 +96,12 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const loginName = req.body.username;
   res.cookie('name', loginName);
+  res.redirect('/urls')
+});
+
+// Route for handling user logout and clearing of cookies and redirecting to home /urls page
+app.post('/logout', (req, res) => {
+  res.clearCookie('name')
   res.redirect('/urls')
 });
 
