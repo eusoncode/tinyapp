@@ -51,8 +51,6 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
