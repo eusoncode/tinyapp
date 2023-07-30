@@ -4,6 +4,10 @@ const app = express();
 const PORT = 8080; // Define default port 8080
 app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
 
+// Set up cookie-parser API
+const cookieParser = require('cookie-parser')
+app.use(cookieParser())
+
 // set view engine to EJS
 app.set('view engine', 'ejs');
 
@@ -11,10 +15,6 @@ app.set('view engine', 'ejs');
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
-};
-
-const cookies = {
-  "username": "user",
 };
 
 // Create a string of 6 random alphanumeric characters that will be used as short URL
@@ -32,7 +32,11 @@ const generateRandomString = function() {
 
 // Routes to the index template when /urls is called
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  console.log(req.cookies);
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies['name']
+  };
   res.render("urls_index", templateVars);
 });
 
