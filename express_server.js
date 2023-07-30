@@ -87,8 +87,8 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls');
 });
 
+// Route for handling user login and registering in cookies and redirecting to home /urls page
 app.post('/login', (req, res) => {
-  console.log(req.body);
   const loginName = req.body.username;
   res.cookie('name', loginName);
   res.redirect('/urls')
