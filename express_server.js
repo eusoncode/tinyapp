@@ -13,6 +13,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const cookies = {
+  "username": "user",
+};
+
 // Create a string of 6 random alphanumeric characters that will be used as short URL
 const generateRandomString = function() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -81,6 +85,13 @@ app.post('/urls/:id/delete', (req, res) => {
   const shortURL = req.params.id;
   delete urlDatabase[shortURL];
   res.redirect('/urls');
+});
+
+app.post('/login', (req, res) => {
+  console.log(req.body);
+  const loginName = req.body.username;
+  res.cookie('name', loginName);
+  res.redirect('/urls')
 });
 
 // Listening on PORT 8080
