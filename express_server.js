@@ -6,7 +6,6 @@ app.use(express.urlencoded({ extended: true })); // use middleware to convert da
 
 // Set up cookie-parser API
 const cookieParser = require('cookie-parser');
-const { name } = require('ejs');
 app.use(cookieParser())
 
 // set view engine to EJS
@@ -43,14 +42,18 @@ app.get("/urls", (req, res) => {
 
 // Route to the new url template
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies['name']
+  };
+  res.render("urls_new", templateVars);
 });
 
 // Route to the show template
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies['name']
   };
   res.render("urls_show", templateVars);
 });
