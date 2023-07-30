@@ -14,7 +14,7 @@ const urlDatabase = {
 };
 
 // Create a string of 6 random alphanumeric characters that will be used as short URL
-function generateRandomString() {
+const generateRandomString = function() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < 6; i++) {
@@ -41,18 +41,18 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[this.id]
+    longURL: urlDatabase[req.params.id]
   };
   res.render("urls_show", templateVars);
 });
 
 // Route to redirect the short URL to the long URL
-app.get("/u/:id", (req, res) => {  
+app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
 
   if (!shortURL) { //If use inputs short URL shorter than 6 characters
-    res.send(`Oops! The ${shortURL} id you requested does not exist`)
+    res.send(`Oops! The ${shortURL} id you requested does not exist`);
   }
   res.redirect(longURL);
 });
@@ -64,15 +64,23 @@ app.post("/urls", (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`)
+  res.redirect(`/urls/${shortURL}`);
   console.log(urlDatabase);
+});
+
+// Route for updating stored url
+app.post('/urls/:id', (req, res) => {
+  const shortURL = req.params.id;
+  const longURL = req.body.submit;
+  urlDatabase[shortURL] = longURL;
+  res.redirect('/urls');
 });
 
 // Route for delete a url
 app.post('/urls/:id/delete', (req, res) => {
   const shortURL = req.params.id;
   delete urlDatabase[shortURL];
-  res.redirect('/urls')
+  res.redirect('/urls');
 });
 
 // Listening on PORT 8080
