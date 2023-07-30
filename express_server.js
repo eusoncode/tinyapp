@@ -6,7 +6,7 @@ app.use(express.urlencoded({ extended: true })); // use middleware to convert da
 
 // Set up cookie-parser API
 const cookieParser = require('cookie-parser');
-app.use(cookieParser())
+app.use(cookieParser());
 
 // set view engine to EJS
 app.set('view engine', 'ejs');
@@ -99,13 +99,13 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const loginName = req.body.username;
   res.cookie('name', loginName);
-  res.redirect('/urls')
+  res.redirect('/urls');
 });
 
 // Route for handling user logout and clearing of cookies and redirecting to home /urls page
 app.post('/logout', (req, res) => {
-  res.clearCookie('name')
-  res.redirect('/urls')
+  res.clearCookie('name');
+  res.redirect('/urls');
 });
 
 // Listening on PORT 8080
