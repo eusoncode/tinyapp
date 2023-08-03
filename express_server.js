@@ -65,7 +65,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
-  };  
+  };
   res.render("urls_registration", templateVars);
 });
 
@@ -124,17 +124,35 @@ app.post('/login', (req, res) => {
 
 // Route for registering a user
 app.post('/register', (req, res) => {
-  // console.log(req.body);
   const user_id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
 
-  users[user_id] = {
+  users[user_id] = { //Register the user to the database
     id: user_id,
     email: email,
     password: password
   };
-  console.log(users);
+
+  if (!email || !password) { // if email or password is empty, request for them
+    return res.status(400).send("Please enter an email and password");
+  }
+
+  const userFound = getUserByEmail(email); //Check if user email exists
+  if (userFound) {
+    return res.status(400).send("Email already exists");
+  }
+
+  const getUserByEmail = (email) => { //Function for hecking if email already exists
+    for (const key in users) {
+      if (users[key].email === email) {
+        return users[key];
+      }
+    }
+    return null;
+  };
+    
+    
   res.cookie('user_id', user_id);
   res.redirect('/urls');
 });
