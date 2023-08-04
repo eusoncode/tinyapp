@@ -128,8 +128,7 @@ app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password; 
 
-  //Function for hecking if email and password already exists
-  const getUserByEmailAndPassword = (email, password) => { 
+  const getUserByEmailAndPassword = (email, password) => { //Function for hecking if email and password already exists
     for (const key in users) {
       if (users[key].email === email && users[key].password === password) {
         return users[key];
