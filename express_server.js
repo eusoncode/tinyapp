@@ -126,8 +126,24 @@ app.post('/urls/:id/delete', (req, res) => {
 // Route for handling user login and redirecting to home /urls page
 app.post('/login', (req, res) => {
   const email = req.body.email;
-  // const password = req.body.password;
-  res.cookie('email', email);
+  const password = req.body.password; 
+
+  //Function for hecking if email and password already exists
+  const getUserByEmailAndPassword = (email, password) => { 
+    for (const key in users) {
+      if (users[key].email === email && users[key].password === password) {
+        return users[key];
+      }
+    }
+    return null;
+  };
+
+  const userFound = getUserByEmailAndPassword(email, password); //Check if user email exists
+  if (!userFound) {
+    return res.status(403).send("😒😒😒😒Email or Password is not correct!.... Please enter a valid email and password");
+  }
+
+  res.cookie('user_id', userFound.id);
   res.redirect('/urls');
 });
 
@@ -137,19 +153,8 @@ app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  users[user_id] = { //Register the user to the database
-    id: user_id,
-    email: email,
-    password: password
-  };
-
   if (!email || !password) { // if email or password is empty, request for them
     return res.status(400).send("Please enter an email and password");
-  }
-
-  const userFound = getUserByEmail(email); //Check if user email exists
-  if (userFound) {
-    return res.status(400).send("Email already exists");
   }
 
   const getUserByEmail = (email) => { //Function for hecking if email already exists
@@ -160,7 +165,20 @@ app.post('/register', (req, res) => {
     }
     return null;
   };
-    
+
+
+  const userFound = getUserByEmail(email); //Check if user email exists
+  if (userFound) {
+    return res.status(400).send("User already exists");
+  }
+
+  users[user_id] = { //Register the user to the database
+    id: user_id,
+    email: email,
+    password: password
+  };
+  
+  console.log(users);
     
   res.cookie('user_id', user_id);
   res.redirect('/urls');
@@ -169,7 +187,7 @@ app.post('/register', (req, res) => {
 // Route for handling user logout and clearing of cookies and redirecting to home /urls page
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // Listening on PORT 8080  -------------------------------------------------------------------------- LISTENING

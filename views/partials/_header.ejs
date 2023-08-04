@@ -19,15 +19,13 @@
       </div>    
       <div class="navbar-nav ml-auto">
         <% if (!user) {%>
-          <div style="margin-right: 10px;">
-            <a class="btn btn-primary btn-lg" href="/login" role="button">Login</a>
-          </div>
-          <div>
-            <a class="btn btn-primary btn-lg" href="/register" role="button">Register</a>
-          </div>                
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/login">Login</a>
+            <a class="nav-item nav-link" href="/register">Register</a>
+          </div>               
         <% } else {%>
           <form class="form-inline text-center" method="POST" action ="/logout">
-            <span class="nav-item" style="margin: 10px"> Logged in as: <strong><%= user.email %></strong> </span>
+            <span class="nav-item" style="margin: 10px"> Logged In As: <strong><%= user.email %></strong> </span>
             <button type="submit" class="btn btn-primary">Logout</button>
           </form>
         <% } %>
