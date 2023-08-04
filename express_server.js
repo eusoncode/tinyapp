@@ -58,6 +58,9 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
+  if (!req.cookies.user_id) {
+    res.redirect('/login');
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -66,6 +69,9 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
+  if (req.cookies.user_id) {
+    res.redirect('/urls');
+  }
   res.render("urls_registration", templateVars);
 });
 
@@ -74,6 +80,9 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
+  if (req.cookies.user_id) {
+    res.redirect('/urls');
+  }
   res.render("urls_login", templateVars);
 });
 
@@ -104,6 +113,11 @@ app.get("/u/:id", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
+
+  if (!req.cookies.user_id) {
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
+  }
+
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -126,7 +140,7 @@ app.post('/urls/:id/delete', (req, res) => {
 // Route for handling user login and redirecting to home /urls page
 app.post('/login', (req, res) => {
   const email = req.body.email;
-  const password = req.body.password; 
+  const password = req.body.password;
 
   const getUserByEmailAndPassword = (email, password) => { //Function for hecking if email and password already exists
     for (const key in users) {
