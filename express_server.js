@@ -69,6 +69,14 @@ app.get("/register", (req, res) => {
   res.render("urls_registration", templateVars);
 });
 
+// Route to user login
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.user_id]
+  };
+  res.render("urls_login", templateVars);
+});
+
 // Route to the show template
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
@@ -117,8 +125,9 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Route for handling user login and redirecting to home /urls page
 app.post('/login', (req, res) => {
-  const loginName = req.body.username;
-  res.cookie('name', loginName);
+  const email = req.body.email;
+  // const password = req.body.password;
+  res.cookie('email', email);
   res.redirect('/urls');
 });
 

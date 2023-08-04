@@ -18,19 +18,15 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>    
       <div class="navbar-nav ml-auto">
-        <% if (!user) {%>
-          <div style="margin-right: 10px;">
-            <a class="btn btn-primary btn-lg" href="/login" role="button">Login</a>
+        <form class="form-inline" action="/login" method="POST">
+          <div class="form-group mb-2">
+            <label for="email">Email:</label>
+            <input class="form-control "type="email" name="email" placeholder="email@example.com" style="width: 250px; margin: 0.25em"/><br>
+            <label for="password">Password:</label>
+            <input class="form-control "type="password" name="password" placeholder="password" style="width: 150px; margin: 0.25em"/><br>
+            <button type="submit" class="btn btn-primary">Login</button>
           </div>
-          <div>
-            <a class="btn btn-primary btn-lg" href="/register" role="button">Register</a>
-          </div>                
-        <% } else {%>
-          <form class="form-inline text-center" method="POST" action ="/logout">
-            <span class="nav-item" style="margin: 10px"> Logged in as: <strong><%= user.email %></strong> </span>
-            <button type="submit" class="btn btn-primary">Logout</button>
-          </form>
-        <% } %>
+        </form>
       </div>       
     </div>
   </nav>
