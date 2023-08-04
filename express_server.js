@@ -13,8 +13,18 @@ app.set('view engine', 'ejs');
 
 // Create a url database to store  and access short and long url for the app
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "gh456k",
+  },
+  l9sm5x: {
+    longURL: "https://www.google.ca",
+    userID: "fsd3f5",
+  },
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "z5gds7",
+  },
 };
 
 // Create a user database
@@ -28,6 +38,11 @@ const users = {
     id: "fsd3f5",
     email: "pimdoz@example.com",
     password: "dishwasher-funk",
+  },
+  z5gds7: {
+    id: "z5gds7",
+    email: "dinye@gmail.com",
+    password: "ilovedaddy",
   }
 };
 
@@ -46,10 +61,29 @@ const generateRandomString = function() {
 
 // Routes to the index template when /urls is called
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies.user_id],
+  const idFromCookie = req.cookies.user_id;
+
+  if (!idFromCookie) { // return a relevant error message if id does not exist
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
+  }
+
+  const urlsForUser = (idFromCookie) => { //Function for hecking if email and password already exists
+    const userURLs = {};
+    for (const key in urlDatabase) {
+      if (urlDatabase[key].userID === idFromCookie) {
+        userURLs[key] = urlDatabase[key];
+      }
+    }
+    return userURLs;
   };
+
+  const userURLPage = urlsForUser(idFromCookie);
+
+  const templateVars = {
+    urls: userURLPage,
+    user: users[idFromCookie],
+  };
+  
   res.render("urls_index", templateVars);
 });
 
@@ -88,9 +122,22 @@ app.get("/login", (req, res) => {
 
 // Route to the show template
 app.get("/urls/:id", (req, res) => {
+  const shortURL = req.params.id;
+
+  if (!shortURL) { // return a relevant error message if id does not exist
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
+  }
+  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {  // return a relevant error message if user does not own url
+    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
+  }
+
+  if (!urlDatabase[shortURL]) {  // return a relevant error message if user is not logged in
+    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
+
   const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    id: shortURL,
+    longURL: urlDatabase[shortURL].longURL,
     user: users[req.cookies.user_id]
   };
   res.render("urls_show", templateVars);
@@ -99,40 +146,80 @@ app.get("/urls/:id", (req, res) => {
 // Route to redirect the short URL to the long URL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
 
-  if (!shortURL) { //If use inputs short URL shorter than 6 characters
-    res.send(`Oops! The ${shortURL} id you requested does not exist`);
+  if (!shortURL) { // return a relevant error message if id does not exist
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
+
+  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {  // return a relevant error message if user does not own url
+    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
+  }
+
+  if (!urlDatabase[shortURL]) { // return a relevant error message if user is not logged in
+    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
+  
   res.redirect(longURL);
 });
 
 // POST Routes  ------------------------------------------------------------------------------------ POST ROUTE
 
 // Route for creating new url
-app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-
-  if (!req.cookies.user_id) {
+app.post("/urls", (req, res) => {  // return a relevant error message if id does not exist
+  if (!req.cookies.user_id) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
 
+  const shortURL = generateRandomString();
+  const longURL = req.body.longURL;
+
+  // Adding a new property to the urlDatabase object
+  urlDatabase[shortURL] = {
+    longURL: longURL,
+    userID: req.cookies.user_id
+  };
+  
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Route for updating stored url
 app.post('/urls/:id', (req, res) => {
-  console.log(req.params);
   const shortURL = req.params.id;
   const longURL = req.body.submit;
-  urlDatabase[shortURL] = longURL;
+  
+  if (!shortURL) {
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
+  }
+
+  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {
+    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
+  }
+
+  if (!urlDatabase[shortURL]) {
+    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
+
+  urlDatabase[shortURL].longURL = longURL;
   res.redirect('/urls');
 });
 
 // Route for delete a url
 app.post('/urls/:id/delete', (req, res) => {
   const shortURL = req.params.id;
+
+  if (!shortURL) { // return a relevant error message if id does not exist
+    return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
+  }
+
+  if (urlDatabase[shortURL].userID !== req.cookies.user_id) { // return a relevant error message if user does not own url
+    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
+  }
+
+  if (!urlDatabase[shortURL]) { // return a relevant error message if user is not logged in
+    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
+  
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
@@ -190,8 +277,6 @@ app.post('/register', (req, res) => {
     email: email,
     password: password
   };
-  
-  console.log(users);
     
   res.cookie('user_id', user_id);
   res.redirect('/urls');
