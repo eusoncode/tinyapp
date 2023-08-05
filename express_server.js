@@ -1,6 +1,7 @@
 // Set up basic web server using express
 const express = require('express');
 const app = express();
+const helpers = require('./helpers'); // Import the getUserByEmail function
 const PORT = 8080; // Define default port 8080
 
 //Set up user password hashing
@@ -245,16 +246,7 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
 
-  const getUserByEmailAndPassword = (email, password) => { //Function for hecking if email and password already exists
-    for (const key in users) {
-      if (users[key].email === email && bcrypt.compareSync(password, hashedPassword)) {
-        return users[key];
-      }
-    }
-    return null;
-  };
-
-  const userFound = getUserByEmailAndPassword(email, password); //Check if user email exists
+  const userFound = helpers.getUserByEmail(email, users); //Check if user email exists
   if (!userFound) {
     return res.status(403).send("😒😒😒😒User account does not exist. Please register a new user account");
   }
@@ -278,17 +270,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send("Please enter an email and password");
   }
 
-  const getUserByEmail = (email) => { //Function for hecking if email already exists
-    for (const key in users) {
-      if (users[key].email === email) {
-        return users[key];
-      }
-    }
-    return null;
-  };
-
-
-  const userFound = getUserByEmail(email); //Check if user email exists
+  const userFound = helpers.getUserByEmail(email, users); //Check if user email exists
   if (userFound) {
     return res.status(400).send("User already exists");
   }
