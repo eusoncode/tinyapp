@@ -4,6 +4,9 @@ const app = express();
 const PORT = 8080; // Define default port 8080
 app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
 
+//Set up user password hashing
+const bcrypt = require("bcryptjs");
+
 // Set up cookie-parser API
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
@@ -228,10 +231,11 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
 
   const getUserByEmailAndPassword = (email, password) => { //Function for hecking if email and password already exists
     for (const key in users) {
-      if (users[key].email === email && users[key].password === password) {
+      if (users[key].email === email && bcrypt.compareSync(password, hashedPassword)) {
         return users[key];
       }
     }
@@ -252,6 +256,7 @@ app.post('/register', (req, res) => {
   const user_id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
 
   if (!email || !password) { // if email or password is empty, request for them
     return res.status(400).send("Please enter an email and password");
@@ -275,9 +280,10 @@ app.post('/register', (req, res) => {
   users[user_id] = { //Register the user to the database
     id: user_id,
     email: email,
-    password: password
+    password: hashedPassword
   };
-    
+  
+  console.log(users);
   res.cookie('user_id', user_id);
   res.redirect('/urls');
 });
