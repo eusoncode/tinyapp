@@ -2,17 +2,40 @@
 const express = require('express');
 const app = express();
 const PORT = 8080; // Define default port 8080
-app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
 
 //Set up user password hashing
 const bcrypt = require("bcryptjs");
 
-// Set up cookie-parser API
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
 // set view engine to EJS
 app.set('view engine', 'ejs');
+
+// Middlewares
+app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
+const generateRandomString = function(length) { // Create a string of 6 random alphanumeric characters that will be used as short URL
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!&%*#_?/%$';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters.charAt(randomIndex);
+  }
+  return result;
+};
+
+// Set up cookie-session API
+const sessionession = require('cookie-session');
+//Use a cookie session to fetch and encrypt session
+const key1 = generateRandomString(32);
+const key2 = generateRandomString(32);
+
+app.use(
+  sessionession({
+    name: "session",
+    keys: [key1, key2],
+
+    // Cookie Options
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  })
+);
 
 // Create a url database to store  and access short and long url for the app
 const urlDatabase = {
@@ -49,22 +72,11 @@ const users = {
   }
 };
 
-// Create a string of 6 random alphanumeric characters that will be used as short URL
-const generateRandomString = function() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    result += characters.charAt(randomIndex);
-  }
-  return result;
-};
-
 // Get Routes // ------------------------------------------------------------------------ GET ROUTE
 
 // Routes to the index template when /urls is called
 app.get("/urls", (req, res) => {
-  const idFromCookie = req.cookies.user_id;
+  const idFromCookie = req.session.user_id;
 
   if (!idFromCookie) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
@@ -93,9 +105,9 @@ app.get("/urls", (req, res) => {
 // Route to the new url template
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     res.redirect('/login');
   }
   res.render("urls_new", templateVars);
@@ -104,9 +116,9 @@ app.get("/urls/new", (req, res) => {
 // Route to new user registration
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.redirect('/urls');
   }
   res.render("urls_registration", templateVars);
@@ -115,9 +127,9 @@ app.get("/register", (req, res) => {
 // Route to user login
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.redirect('/urls');
   }
   res.render("urls_login", templateVars);
@@ -130,7 +142,7 @@ app.get("/urls/:id", (req, res) => {
   if (!shortURL) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
-  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {  // return a relevant error message if user does not own url
+  if (urlDatabase[shortURL].userID !== req.session.user_id) {  // return a relevant error message if user does not own url
     return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
@@ -141,7 +153,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: shortURL,
     longURL: urlDatabase[shortURL].longURL,
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 });
@@ -155,7 +167,7 @@ app.get("/u/:id", (req, res) => {
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
 
-  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {  // return a relevant error message if user does not own url
+  if (urlDatabase[shortURL].userID !== req.session.user_id) {  // return a relevant error message if user does not own url
     return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
@@ -170,17 +182,17 @@ app.get("/u/:id", (req, res) => {
 
 // Route for creating new url
 app.post("/urls", (req, res) => {  // return a relevant error message if id does not exist
-  if (!req.cookies.user_id) { // return a relevant error message if id does not exist
+  if (!req.session.user_id) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
 
-  const shortURL = generateRandomString();
+  const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
 
   // Adding a new property to the urlDatabase object
   urlDatabase[shortURL] = {
     longURL: longURL,
-    userID: req.cookies.user_id
+    userID: req.session.user_id
   };
   
   res.redirect(`/urls/${shortURL}`);
@@ -195,7 +207,7 @@ app.post('/urls/:id', (req, res) => {
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
 
-  if (urlDatabase[shortURL].userID !== req.cookies.user_id) {
+  if (urlDatabase[shortURL].userID !== req.session.user_id) {
     return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
@@ -215,7 +227,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
 
-  if (urlDatabase[shortURL].userID !== req.cookies.user_id) { // return a relevant error message if user does not own url
+  if (urlDatabase[shortURL].userID !== req.session.user_id) { // return a relevant error message if user does not own url
     return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
@@ -244,16 +256,20 @@ app.post('/login', (req, res) => {
 
   const userFound = getUserByEmailAndPassword(email, password); //Check if user email exists
   if (!userFound) {
+    return res.status(403).send("😒😒😒😒User account does not exist. Please register a new user account");
+  }
+
+  if (userFound && !bcrypt.compareSync(password, hashedPassword)) {
     return res.status(403).send("😒😒😒😒Email or Password is not correct!.... Please enter a valid email and password");
   }
 
-  res.cookie('user_id', userFound.id);
+  req.session.user_id = userFound.id;
   res.redirect('/urls');
 });
 
 // Route for registering a user
 app.post('/register', (req, res) => {
-  const user_id = generateRandomString();
+  const user_id = generateRandomString(6);
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
@@ -284,13 +300,13 @@ app.post('/register', (req, res) => {
   };
   
   console.log(users);
-  res.cookie('user_id', user_id);
+  req.session.user_id = user_id;
   res.redirect('/urls');
 });
 
-// Route for handling user logout and clearing of cookies and redirecting to home /urls page
+// Route for handling user logout and clearing of session and redirecting to home /urls page
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/login');
 });
 
