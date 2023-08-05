@@ -1,3 +1,4 @@
+//Test code
 const { assert } = require("chai");
 
 const { getUserByEmail } = require("../helpers.js");

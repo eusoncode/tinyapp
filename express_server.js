@@ -242,16 +242,16 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // Route for handling user login and redirecting to home /urls page
 app.post('/login', (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
+  const emailInput = req.body.email;
+  const userFound = helpers.getUserByEmail(emailInput, users); //Check if user email exists
+  const passwordInput = req.body.password;
+  const hashedPassword = userFound.password; // Hash user password
 
-  const userFound = helpers.getUserByEmail(email, users); //Check if user email exists
   if (!userFound) {
     return res.status(403).send("😒😒😒😒User account does not exist. Please register a new user account");
   }
 
-  if (userFound && !bcrypt.compareSync(password, hashedPassword)) {
+  if (userFound && !bcrypt.compareSync(passwordInput, hashedPassword)) {
     return res.status(403).send("😒😒😒😒Email or Password is not correct!.... Please enter a valid email and password");
   }
 
@@ -262,22 +262,22 @@ app.post('/login', (req, res) => {
 // Route for registering a user
 app.post('/register', (req, res) => {
   const user_id = generateRandomString(6);
-  const email = req.body.email;
-  const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10); // Hash user password
+  const emailInput = req.body.email;
+  const passwordInput = req.body.password;
+  const hashedPassword = bcrypt.hashSync(passwordInput, 10); // Hash user password
 
-  if (!email || !password) { // if email or password is empty, request for them
+  if (!emailInput || !passwordInput) { // if email or password is empty, request for them
     return res.status(400).send("Please enter an email and password");
   }
 
-  const userFound = helpers.getUserByEmail(email, users); //Check if user email exists
+  const userFound = helpers.getUserByEmail(emailInput, users); //Check if user email exists
   if (userFound) {
     return res.status(400).send("User already exists");
   }
 
   users[user_id] = { //Register the user to the database
     id: user_id,
-    email: email,
+    email: emailInput,
     password: hashedPassword
   };
   
