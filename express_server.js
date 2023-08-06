@@ -7,7 +7,6 @@ const PORT = 8080; // Define default port 8080
 //Set up user password security by hashing
 const bcrypt = require("bcryptjs");
 
-
 // Middlewares
 app.set('view engine', 'ejs'); // set view engine to EJS
 app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
