@@ -7,7 +7,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 !["Account creation page"](#)
 !["Url creation page "](#)
 !["List of user url created"](#)
-!["Url edit page"](#)
+!["Url edit page"](https://github.com/eusoncode/tinyapp/blob/master/docs/urls_edit.png?raw=true)
 
 ## Dependencies
 
