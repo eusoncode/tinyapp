@@ -4,13 +4,12 @@ const app = express();
 const helpers = require('./helpers'); // Import the getUserByEmail function
 const PORT = 8080; // Define default port 8080
 
-//Set up user password hashing
+//Set up user password security by hashing
 const bcrypt = require("bcryptjs");
 
-// set view engine to EJS
-app.set('view engine', 'ejs');
 
 // Middlewares
+app.set('view engine', 'ejs'); // set view engine to EJS
 app.use(express.urlencoded({ extended: true })); // use middleware to convert data to human readable form
 const generateRandomString = function(length) { // Create a string of 6 random alphanumeric characters that will be used as short URL
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!&%*#_?/%$';
@@ -73,7 +72,7 @@ const users = {
   }
 };
 
-// Get Routes // ------------------------------------------------------------------------ GET ROUTE
+// Get Routes // -------------------------------------------------------------------------- GET ROUTE
 
 // Routes to the index template when /urls is called
 app.get("/urls", (req, res) => {
@@ -143,12 +142,11 @@ app.get("/urls/:id", (req, res) => {
   if (!shortURL) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
-  if (urlDatabase[shortURL].userID !== req.session.user_id) {  // return a relevant error message if user does not own url
-    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
-  }
-
   if (!urlDatabase[shortURL]) {  // return a relevant error message if user is not logged in
     return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
+  if (urlDatabase[shortURL].userID !== req.session.user_id) {  // return a relevant error message if user does not own url
+    return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
   const templateVars = {
@@ -162,24 +160,22 @@ app.get("/urls/:id", (req, res) => {
 // Route to redirect the short URL to the long URL
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL].longURL;
-
   if (!shortURL) { // return a relevant error message if id does not exist
     return res.status(403).send("😒😒😒😒You are not Logged in!!! Log in to use the TinyApp....");
   }
-
+  if (!urlDatabase[shortURL]) { // return a relevant error message if user is not logged in
+    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
+  }
   if (urlDatabase[shortURL].userID !== req.session.user_id) {  // return a relevant error message if user does not own url
     return res.send("Oops!! 😒😒😒😒 Url does not exist in your account. Please login to your account!");
   }
 
-  if (!urlDatabase[shortURL]) { // return a relevant error message if user is not logged in
-    return res.send("Oops!! 😒😒😒😒 The short Url does not exist in your account. Please login to your account!");
-  }
+  const longURL = urlDatabase[shortURL].longURL;
   
   res.redirect(longURL);
 });
 
-// POST Routes  ------------------------------------------------------------------------------------ POST ROUTE
+// POST Routes  -------------------------------------------------------------------------- POST ROUTE
 
 // Route for creating new url
 app.post("/urls", (req, res) => {  // return a relevant error message if id does not exist
@@ -292,7 +288,7 @@ app.post('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-// Listening on PORT 8080  -------------------------------------------------------------------------- LISTENING
+// Listening on PORT 8080  ---------------------------------------------------------------- LISTENING
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
